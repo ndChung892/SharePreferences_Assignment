@@ -20,18 +20,14 @@
             android:exported="true">
             <intent-filter>
                 <action android:name="android.intent.action.MAIN" />
-
                 <category android:name="android.intent.category.LAUNCHER" />
             </intent-filter>
         </activity>
         <provider
-            android:authorities="com.example.sharepreference.ContentProvider"
+            android:authorities="com.example.sharepreference.contentprovider"
             android:name=".ContentProvider"
             android:exported="true"
             android:grantUriPermissions="true"
-            android:multiprocess="true"
-            android:readPermission="sharepreference.readData"
-
              />
     </application>
 

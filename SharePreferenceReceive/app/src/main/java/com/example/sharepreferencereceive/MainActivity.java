@@ -7,14 +7,8 @@ import android.database.Cursor;
 import android.net.Uri;
 import android.os.Bundle;
 import android.util.Log;
+import android.widget.TextView;
 
-import java.io.BufferedReader;
-import java.io.FileInputStream;
-import java.io.FileNotFoundException;
-import java.io.FileOutputStream;
-import java.io.IOException;
-import java.io.InputStreamReader;
-import java.nio.charset.StandardCharsets;
 
 public class MainActivity extends AppCompatActivity {
     private static final String TAG ="MainActivity";
@@ -23,19 +17,26 @@ public class MainActivity extends AppCompatActivity {
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
-
-        Cursor cursor = getContentResolver().query(Uri.parse("content://com.example.sharepreferencereceive"),
+        TextView txtDisplay = findViewById(R.id.txtGetData);
+        Cursor cursor = getContentResolver().query(Uri.parse("content://com.example.sharepreference.contentprovider/"),
                 null,
                 null,
                 null,
                 null);
-        while(cursor.moveToNext()){
-            String name = cursor.getString(cursor.getColumnIndexOrThrow("name"));
-            String address = cursor.getString(cursor.getColumnIndexOrThrow("address"));
-            String email = cursor.getString(cursor.getColumnIndexOrThrow("email"));
-            Model model = new Model(name, address,email);
-            Log.d(TAG, "onCreate: "+model);
+        if(cursor!= null){
+            cursor.moveToPosition(-1);
+            int index = cursor.getColumnIndex("name");
+            while(cursor.moveToNext()){
+                String name = cursor.getString(index);
+                String address = cursor.getString(cursor.getColumnIndexOrThrow("address"));
+                String email = cursor.getString(cursor.getColumnIndexOrThrow("email"));
+                Log.d(TAG, "onCreate: "+name+ address+ email);
+                txtDisplay.setText(name);
+            }
         }
+
+
+
 
     }
 }

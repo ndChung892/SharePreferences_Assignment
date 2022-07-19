@@ -1,6 +1,7 @@
 package com.example.sharepreference;
 
 import android.content.ContentValues;
+import android.content.Context;
 import android.content.SharedPreferences;
 import android.content.UriMatcher;
 import android.database.Cursor;
@@ -13,6 +14,7 @@ import android.util.Log;
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 import androidx.security.crypto.EncryptedSharedPreferences;
+import androidx.security.crypto.MasterKey;
 
 import java.io.IOException;
 import java.net.ContentHandler;
@@ -20,10 +22,26 @@ import java.security.GeneralSecurityException;
 
 public class ContentProvider extends android.content.ContentProvider {
     public static final String TAG= "ContentProvider";
+    private static final String MY_SHARE_PREFERENCES = "MY_SHARE_PREFERENCES";
 
-    private MySharePreferences mySharePreferences;
+    private SharedPreferences mSharedPreferences;
     @Override
     public boolean onCreate() {
+        try {
+            MasterKey masterKey =
+                    new MasterKey.Builder(getContext(),"Chung")
+                            .setKeyScheme(MasterKey.KeyScheme.AES256_GCM)
+                            .build();
+            mSharedPreferences = EncryptedSharedPreferences.create(
+                    getContext(),
+                    MY_SHARE_PREFERENCES,
+                    masterKey,
+                    EncryptedSharedPreferences.PrefKeyEncryptionScheme.AES256_SIV,
+                    EncryptedSharedPreferences.PrefValueEncryptionScheme.AES256_GCM
+            );
+        } catch (GeneralSecurityException | IOException e) {
+            e.printStackTrace();
+        }
         return true;
     }
 
@@ -32,12 +50,15 @@ public class ContentProvider extends android.content.ContentProvider {
     public Cursor query(@NonNull Uri uri, @Nullable String[] projection, @Nullable String selection, @Nullable String[] selectionArgs, @Nullable String sortOrder) {
         String[] columns = new String[]{"name", "address","email"};
         MatrixCursor matrixCursor = new MatrixCursor(columns);
-        String name = mySharePreferences.getValue("name");
-        String address = mySharePreferences.getValue("address");
-        String email = mySharePreferences.getValue("email");
-        matrixCursor.addRow(new Object[] {name, address, email});
+        MatrixCursor.RowBuilder builder = matrixCursor.newRow();
+
+        String name = mSharedPreferences.getString("name","");
+        String address = mSharedPreferences.getString("address","");
+        String email = mSharedPreferences.getString("email","");
+        builder.add(name).add(address).add(email);
         Log.d(TAG, "query: "+matrixCursor);
         return matrixCursor;
+
     }
 
     @Nullable
